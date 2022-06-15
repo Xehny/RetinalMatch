@@ -5,10 +5,25 @@ import org.opencv.imgproc.Imgproc;
 
 public class RetinalMatch {
     public static void main(String[] args) {
-        System.out.println(Core.VERSION);
-        Mat src = Imgcodecs.imread("img/IM000001_1.JPG");
-        Mat dst = new Mat();
-        Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2BGR);
-        Imgcodecs.imwrite("out.png");
+        if (args.length != 2) {
+            System.err.println("Usage: RetinalMatch <image1> <image2>");
+            return;
+        }
+
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        try {
+            Mat src1 = Imgcodecs.imread(args[0]);
+            //Mat src2 = Imgcodecs.imread(args[1]);
+
+            Mat out1 = convertImage(src1);
+            //Mat out2 = convertImage(src2);
+
+            Imgcodecs.imwrite("out.png", out1);
+        }
+        catch(Exception ex) {
+            System.err.println("Error: " + ex);
+        }
+
     }
 }
