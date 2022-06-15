@@ -1,6 +1,10 @@
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RetinalMatch {
     public static void main(String[] args) {
@@ -13,21 +17,46 @@ public class RetinalMatch {
 
         try {
             Mat src1 = Imgcodecs.imread(args[0]);
-            //Mat src2 = Imgcodecs.imread(args[1]);
+            Mat src2 = Imgcodecs.imread(args[1]);
 
             Mat out1 = convertImage(src1);
-            //Mat out2 = convertImage(src2);
+            Mat out2 = convertImage(src2);
 
             // we do some magic
             // https://theailearner.com/2019/08/13/comparing-histograms-using-opencv-python/
             //compareImages(out1, out2);
 
             Imgcodecs.imwrite("out.png", out1);
+            Imgcodecs.imwrite("out2.png", out2);
         }
         catch(Exception ex) {
             System.err.println("Error: " + ex);
         }
 
+    }
+
+    public static void compareImages(Mat src1, Mat src2) {
+        Mat img1HSV = new Mat();
+        Mat img2HSV = new Mat();
+
+        // Convert images to HSV
+        Imgproc.cvtColor(src1, img1HSV, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(src2, img2HSV, Imgproc.COLOR_BGR2GRAY);
+
+        Mat histImg1 = new Mat();
+        Mat histImg2 = new Mat();
+
+        Mat hist = new MatOfInt(180, 256);
+        MatOfInt histSize = new MatOfInt(0, 180, 0, 256);
+
+        MatOfInt matOfInt = new MatOfInt(0, 1);
+
+        List<Mat> l = new ArrayList<Mat>();
+        l.add(hist);
+        //Imgproc.calcHist(l, matOfInt, new Mat(), hist, histSize);
+
+        boolean isSame = false;
+        System.out.println(isSame ? 1 : 0);
     }
 
     public static Mat convertImage(Mat src) {
