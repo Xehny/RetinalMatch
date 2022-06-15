@@ -1,7 +1,4 @@
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Size;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -20,6 +17,10 @@ public class RetinalMatch {
 
             Mat out1 = convertImage(src1);
             //Mat out2 = convertImage(src2);
+
+            // we do some magic
+            // https://theailearner.com/2019/08/13/comparing-histograms-using-opencv-python/
+            //compareImages(out1, out2);
 
             Imgcodecs.imwrite("out.png", out1);
         }
@@ -72,7 +73,33 @@ public class RetinalMatch {
         Rect roi = new Rect(left, top, right - left + 1, bottom - top + 1);
         Mat cropped = new Mat(resized, roi);
 
-        Mat dst = cropped;
+        // Blur with noise
+        Mat blurred = new Mat();
+        Imgproc.medianBlur(cropped, blurred, 3);
+
+        // Laplace
+        Mat laplace = new Mat();
+        Imgproc.Laplacian(blurred, laplace, CvType.CV_8U, 3);
+
+        // denoise
+        Photo.fastNlMeansDenoisingColored(laplace, laplace);
+
+        // Contrast adjustments
+        Mat contrast = new Mat();
+        Core.multiply(laplace, new Scalar(3, 3, 3), contrast);
+
+        //Greyscale
+        Mat greyCropped = new Mat();
+        Imgproc.cvtColor(contrast, greyCropped, Imgproc.COLOR_BGR2GRAY);
+
+        // Binary color
+        Mat binary = new Mat();
+        Imgproc.threshold(greyCropped, binary, 40, 255, Imgproc.THRESH_BINARY);
+
+
+        Mat dst = new Mat();
+        Imgproc.Canny(binary, dst, 25, 95);
+
         return dst;
     }
 }
